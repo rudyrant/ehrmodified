@@ -1,14 +1,11 @@
 from pathlib import Path
+from urllib.request import urlopen
 
-root = Path("extracted/EndlessHostRoles-main")
+# Reuse the complete previous patcher, then fix the C# coroutine restriction
+# before executing it. The previous patcher contains the STATS + AutoRemake changes.
+url = "https://raw.githubusercontent.com/rudyrant/ehrmodified/8ffca4a8c3ca516d69f8d07ce518f82f715da964/apply-rudyrant-ehr.py"
+previous = urlopen(url, timeout=30).read().decode("utf-8")
 
-lobby = root / "Modules" / "LobbySharingAPI.cs"
-text = lobby.read_text(encoding="utf-8-sig")
-
-if "using System.Collections.Generic;" not in text:
-    text = text.replace("using System.Diagnostics.CodeAnalysis;\n", "using System.Diagnostics.CodeAnalysis;\nusing System.Collections.Generic;\nusing System.IO;\nusing System.Linq;\nusing System.Reflection;\n", 1)
-
-# Fix the C# restriction that yield cannot appear inside a catch block.
 old = '''            catch (Exception e)
             {
                 Logger.Error($"Auto-remake attempt {attempt}/3 failed: {e}", "AutoRemakeManager");
@@ -21,8 +18,9 @@ new = '''            catch (Exception e)
             }
             yield return new WaitForSecondsRealtime(5f);
 '''
-if old in text:
-    text = text.replace(old, new, 1)
 
-lobby.write_text(text, encoding="utf-8")
-print("RudyRant EHR modifications applied.")
+if old not in previous:
+    raise SystemExit("Expected AutoRemake catch block not found in previous patcher")
+
+previous = previous.replace(old, new, 1)
+exec(compile(previous, "apply-rudyrant-ehr.py", "exec"), {"__name__": "__main__"})
