@@ -1,0 +1,34 @@
+name: Build Modified EHR
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-ehr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract EHR source
+        run: unzip -q EndlessHostRoles-main.zip -d extracted
+
+      - name: Apply RudyRant modifications
+        run: python3 apply-rudyrant-ehr.py
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Build EHR
+        working-directory: extracted/EndlessHostRoles-main
+        run: dotnet build EHR.csproj -c Release -o build/
+
+      - name: Upload modified EHR.dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: ehr-rudyrant-stats-autoremake
+          path: extracted/EndlessHostRoles-main/build/EHR.dll
+          retention-days: 7
