@@ -6,7 +6,7 @@ lobby = root / "Modules" / "LobbySharingAPI.cs"
 text = lobby.read_text(encoding="utf-8-sig")
 
 if "using System.IO;" not in text:
-    text = text.replace("using System.Diagnostics.CodeAnalysis;\n", "using System.Diagnostics.CodeAnalysis;\nusing System.IO;\nusing System.Linq;\nusing System.Reflection;\n", 1)
+    text = text.replace("using System.Diagnostics.CodeAnalysis;\n", "using System.Diagnostics.CodeAnalysis;\nusing System.Collections.Generic;\nusing System.IO;\nusing System.Linq;\nusing System.Reflection;\n", 1)
 
 marker = '\n[SuppressMessage("ReSharper", "InconsistentNaming")]\npublic enum LobbyStatus'
 manager = '''public static class LobbyStatsManager
